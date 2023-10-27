@@ -45,7 +45,12 @@ fn main() {
             next_execution_datetime = (Local::now().date_naive()
                 + chrono::Days::new(args.interval_days))
             .and_time(parsed_time);
-            println!("Word: {}", get_word().unwrap());
+            println!(
+                "Word: {}",
+                get_word().unwrap_or(
+                    "There has been an error with getting todays' random prompt.".to_string()
+                )
+            );
         }
         sleep(Duration::new(5, 0));
     }
