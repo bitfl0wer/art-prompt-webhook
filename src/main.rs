@@ -61,8 +61,3 @@ fn get_word() -> Result<String, reqwest::Error> {
     let resp = reqwest::blocking::get("https://random-word-form.repl.co/random/noun")?.text()?;
     Ok(from_str::<WordResponse>(&resp).unwrap().zero)
 }
-
-#[test]
-fn test() {
-    println!("{}", get_word().unwrap());
-}
