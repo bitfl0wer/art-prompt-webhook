@@ -11,13 +11,16 @@ use serde_json::{from_str, to_string};
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 struct Args {
+    /// The Discord Webhook URL to send the message to.
     #[arg(short, long)]
     webhook_url: String,
     /// The time to send the message at. Uses your system timezone. Format: HH:MM
     #[arg(short, long)]
     time: String,
+    /// The interval in days between messages.
     #[arg(short, long, default_value = "7")]
     interval_days: u64,
+    /// The date of the first execution. Format: YYYY-MM-DD. Defaults to the current date.
     #[arg(short, long, required = false)]
     first_execution: Option<String>,
 }
@@ -32,10 +35,17 @@ struct WordResponse {
 #[derive(Serialize, Debug)]
 struct WebhookPayload {
     content: String,
-    embeds: Option<String>,
+    embeds: Vec<Embed>,
     attachments: Vec<String>,
     username: String,
     avatar_url: String,
+}
+
+#[derive(Serialize, Debug)]
+struct Embed {
+    title: String,
+    description: String,
+    color: u64,
 }
 
 fn main() {
@@ -47,9 +57,13 @@ fn main() {
         None => Local::now().date_naive() + chrono::Days::new(args.interval_days),
     };
     let mut next_execution_datetime = next_execution_date.and_time(parsed_time);
-    println!("Word: {}", get_word().unwrap());
+    send_webhook(
+        &args.webhook_url,
+        &get_word().expect("There has been an error with getting todays' random prompt."),
+        &args.interval_days,
+    )
+    .expect("There has been an error with sending the first message.");
     loop {
-        println!("Hello, clap! {:?} {}", args, next_execution_datetime);
         if next_execution_datetime <= Local::now().naive_local() {
             next_execution_datetime = (Local::now().date_naive()
                 + chrono::Days::new(args.interval_days))
@@ -59,6 +73,7 @@ fn main() {
                 &get_word().unwrap_or(
                     "There has been an error with getting todays' random prompt.".to_string(),
                 ),
+                &args.interval_days,
             )
             .unwrap();
         }
@@ -72,10 +87,22 @@ fn get_word() -> Result<String, reqwest::Error> {
     Ok(from_str::<WordResponse>(&resp).unwrap().zero)
 }
 
-fn send_webhook(webhook_url: &str, message: &str) -> Result<(), reqwest::Error> {
+fn send_webhook(
+    webhook_url: &str,
+    message: &str,
+    interval: &u64,
+) -> Result<reqwest::blocking::Response, reqwest::Error> {
+    let embed = Embed {
+        title: "Random Prompt Time!".to_string(),
+        description: format!(
+            "Hello artists! The prompt for today is: **{}**. \nThe next prompt will be posted in {} days. Until then, have fun creating!",
+            message, interval
+        ),
+        color: 0x00ff00,
+    };
     let payload = WebhookPayload {
-        content: message.to_string(),
-        embeds: None,
+        content: "".to_string(),
+        embeds: vec![embed],
         attachments: vec![],
         username: "Artists' Random Prompt Generator".to_string(),
         avatar_url:
@@ -83,8 +110,5 @@ fn send_webhook(webhook_url: &str, message: &str) -> Result<(), reqwest::Error> 
                 .to_string(),
     };
     let client = reqwest::blocking::Client::new();
-    dbg!(to_string(&payload).unwrap());
-    let resp = client.post(webhook_url).header("Content-Type", "application/json").body(to_string(&payload).expect("There has been an error while serializing the Webhook Payload to JSON. Please report this bug at: https://github.com/bitfl0wer/art-prompt-webhook")).send()?;
-    println!("Response: {:?}", resp.status());
-    Ok(())
+    client.post(webhook_url).header("Content-Type", "application/json").body(to_string(&payload).expect("There has been an error while serializing the Webhook Payload to JSON. Please report this bug at: https://github.com/bitfl0wer/art-prompt-webhook")).send()
 }
