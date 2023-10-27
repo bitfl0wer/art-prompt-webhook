@@ -42,7 +42,7 @@ fn main() {
     loop {
         println!("Hello, clap! {:?} {}", args, next_execution_datetime);
         if next_execution_datetime <= Local::now().naive_local() {
-            next_execution_datetime = (next_execution_datetime.date()
+            next_execution_datetime = (Local::now().date_naive()
                 + chrono::Days::new(args.interval_days))
             .and_time(parsed_time);
             println!("Word: {}", get_word().unwrap());
