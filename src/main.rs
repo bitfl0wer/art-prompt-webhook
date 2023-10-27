@@ -56,13 +56,15 @@ fn main() {
             .expect("Unable to parse First Execution Date. Required Format: YYYY-MM-DD"),
         None => Local::now().date_naive() + chrono::Days::new(args.interval_days),
     };
+    if args.first_execution.is_none() {
+        send_webhook(
+            &args.webhook_url,
+            &get_word().expect("There has been an error with getting todays' random prompt."),
+            &args.interval_days,
+        )
+        .expect("There has been an error with sending the first message.");
+    }
     let mut next_execution_datetime = next_execution_date.and_time(parsed_time);
-    send_webhook(
-        &args.webhook_url,
-        &get_word().expect("There has been an error with getting todays' random prompt."),
-        &args.interval_days,
-    )
-    .expect("There has been an error with sending the first message.");
     loop {
         if next_execution_datetime <= Local::now().naive_local() {
             next_execution_datetime = (Local::now().date_naive()
