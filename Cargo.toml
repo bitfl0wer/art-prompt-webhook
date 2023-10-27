@@ -1,0 +1,20 @@
+[package]
+name = "art-prompt-webhook"
+version = "0.1.0"
+edition = "2021"
+authors = ["bitfl0wer"]
+repository = ""
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "4.4.7"
+reqwest = { version = "0.11.22", features = ["blocking"] }
+serde = { version = "1.0.190", features = ["derive"] }
+serde_json = "1.0.107"
+
+[profile.release]
+strip = true
+opt-level = 3     # Set to "s" or "z" to optimize for build size, or "3" for speed.
+lto = true
+codegen-units = 1
