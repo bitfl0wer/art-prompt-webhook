@@ -4,6 +4,8 @@ version = "1.0.0"
 edition = "2021"
 authors = ["bitfl0wer"]
 repository = "https://github.com/bitfl0wer/art-prompt-webhook"
+description = "Sends a message to a Discord webhook with a random word from [random-word-form](https://random-word-form.repl.co/random/noun)."
+license = "Unlicense"
 
 [dependencies]
 chrono = "0.4.31"
