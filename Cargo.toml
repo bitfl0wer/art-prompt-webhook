@@ -1,11 +1,9 @@
 [package]
 name = "art-prompt-webhook"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["bitfl0wer"]
-repository = ""
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+repository = "https://github.com/bitfl0wer/art-prompt-webhook"
 
 [dependencies]
 chrono = "0.4.31"
