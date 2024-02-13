@@ -86,14 +86,7 @@ fn main() {
 
 
 fn get_word() -> Result<String, reqwest::Error> {
-    let mut words: Vec<String> = vec![];
-
-    let adjectives = from_str::<Vec<String>>(include_str!("../static/adjective.json")).unwrap();
-    let nouns = from_str::<Vec<String>>(include_str!("../static/noun.json")).unwrap();
-    let animals = from_str::<Vec<String>>(include_str!("../static/animal.json")).unwrap();
-    words.extend(adjectives);
-    words.extend(nouns);
-    words.extend(animals);
+    let words = from_str::<Vec<String>>(include_str!("../static/words.json")).unwrap();
 
     Ok(words.choose(&mut rand::thread_rng()).unwrap().to_string())
 }
