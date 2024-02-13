@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use chrono::{Local, NaiveDate, NaiveTime};
 use clap::Parser;
+use rand::prelude::SliceRandom;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 
@@ -83,10 +84,18 @@ fn main() {
     }
 }
 
+
 fn get_word() -> Result<String, reqwest::Error> {
-    // Blocking here is okay, due to the very low frequency of requests.
-    let resp = reqwest::blocking::get("https://random-word-form.repl.co/random/noun")?.text()?;
-    Ok(from_str::<WordResponse>(&resp).unwrap().zero)
+    let mut words: Vec<String> = vec![];
+
+    let adjectives = from_str::<Vec<String>>(include_str!("../static/adjective.json")).unwrap();
+    let nouns = from_str::<Vec<String>>(include_str!("../static/noun.json")).unwrap();
+    let animals = from_str::<Vec<String>>(include_str!("../static/animal.json")).unwrap();
+    words.extend(adjectives);
+    words.extend(nouns);
+    words.extend(animals);
+
+    Ok(words.choose(&mut rand::thread_rng()).unwrap().to_string())
 }
 
 fn send_webhook(
