@@ -66,26 +66,34 @@ fn main() {
     }
     let mut next_execution_datetime = next_execution_date.and_time(parsed_time);
     loop {
-        if next_execution_datetime <= Local::now().naive_local() {
-            next_execution_datetime = (Local::now().date_naive()
-                + chrono::Days::new(args.interval_days))
-            .and_time(parsed_time);
-            send_webhook(
-                &args.webhook_url,
-                &get_word().unwrap_or(
-                    "There has been an error with getting todays' random prompt.".to_string(),
-                ),
-                &args.interval_days,
-            )
-            .unwrap();
+        if next_execution_datetime > Local::now().naive_local() {
+            sleep(Duration::new(30, 0));
+            continue;
         }
-        sleep(Duration::new(5, 0));
+        send_webhook(
+            &args.webhook_url,
+            match &get_word() {
+                Ok(msg) => {
+                    next_execution_datetime = (Local::now().date_naive()
+                        + chrono::Days::new(args.interval_days))
+                    .and_time(parsed_time);
+                    msg
+                }
+                Err(_) => {
+                    sleep(Duration::new(30, 0));
+                    continue;
+                }
+            },
+            &args.interval_days,
+        )
+        .unwrap();
     }
 }
 
 fn get_word() -> Result<String, reqwest::Error> {
     // Blocking here is okay, due to the very low frequency of requests.
-    let resp = reqwest::blocking::get("https://random-word-form.repl.co/random/noun")?.text()?;
+    let resp =
+        reqwest::blocking::get("https://random-word-form.herokuapp.com/random/noun")?.text()?;
     Ok(from_str::<WordResponse>(&resp).unwrap().zero)
 }
 
@@ -108,7 +116,7 @@ fn send_webhook(
         attachments: vec![],
         username: "Artists' Random Prompt Generator".to_string(),
         avatar_url:
-            "https://github.com/bitfl0wer/art-prompt-webhook/blob/main/static/icon.png?raw=true"
+            "https://cloud.bitfl0wer.de/index.php/apps/files_sharing/publicpreview/DPLYMQPjbL6Qnqd?file"
                 .to_string(),
     };
     let client = reqwest::blocking::Client::new();

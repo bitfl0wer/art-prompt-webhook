@@ -1,6 +1,6 @@
 [package]
 name = "art-prompt-webhook"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 authors = ["bitfl0wer"]
 repository = "https://github.com/bitfl0wer/art-prompt-webhook"
